@@ -9,107 +9,107 @@ echo   OPENTRON – Setup ^& Start
 echo  ══════════════════════════════════════
 echo.
 
-:: ── Python prüfen ─────────────────────────────────────────
+:: ── Check Python ──────────────────────────────────────────
 python --version > nul 2>&1
 if errorlevel 1 (
-    echo  [FEHLER] Python nicht gefunden!
+    echo  [ERROR] Python not found!
     echo.
-    echo  Bitte Python installieren:
+    echo  Please install Python:
     echo  https://www.python.org/downloads/
     echo.
-    echo  Wichtig: Haken bei "Add Python to PATH" setzen!
+    echo  Important: Check "Add Python to PATH" during installation!
     echo.
     pause
     exit /b 1
 )
 
 for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
-echo  [OK] %PY_VER% gefunden
+echo  [OK] %PY_VER% found
 echo.
 
-:: ── pip prüfen ────────────────────────────────────────────
+:: ── Check pip ─────────────────────────────────────────────
 pip --version > nul 2>&1
 if errorlevel 1 (
-    echo  [FEHLER] pip nicht gefunden.
-    echo  Bitte Python neu installieren.
+    echo  [ERROR] pip not found.
+    echo  Please reinstall Python.
     pause
     exit /b 1
 )
 
-:: ── websockets installieren ───────────────────────────────
-echo  Installiere Abhaengigkeiten...
+:: ── Install websockets ────────────────────────────────────
+echo  Installing dependencies...
 pip install websockets --quiet --disable-pip-version-check
 if errorlevel 1 (
     echo.
-    echo  [FEHLER] Installation fehlgeschlagen.
-    echo  Versuche manuell: pip install websockets
+    echo  [ERROR] Installation failed.
+    echo  Try manually: pip install websockets
     pause
     exit /b 1
 )
-echo  [OK] websockets installiert
+echo  [OK] websockets installed
 echo.
 
-:: ── Dateien prüfen ────────────────────────────────────────
+:: ── Check files ───────────────────────────────────────────
 if not exist "server.py" (
-    echo  [FEHLER] server.py nicht gefunden!
-    echo  Bitte alle Dateien in denselben Ordner legen:
+    echo  [ERROR] server.py not found!
+    echo  Please place all files in the same folder:
     echo    server.py, game.py, http_server.py, index.html, game.js
     echo.
     pause
     exit /b 1
 )
 if not exist "game.py" (
-    echo  [FEHLER] game.py nicht gefunden!
+    echo  [ERROR] game.py not found!
     pause
     exit /b 1
 )
 if not exist "http_server.py" (
-    echo  [FEHLER] http_server.py nicht gefunden!
+    echo  [ERROR] http_server.py not found!
     pause
     exit /b 1
 )
 if not exist "index.html" (
-    echo  [FEHLER] index.html nicht gefunden!
+    echo  [ERROR] index.html not found!
     pause
     exit /b 1
 )
 if not exist "game.js" (
-    echo  [FEHLER] game.js nicht gefunden!
+    echo  [ERROR] game.js not found!
     pause
     exit /b 1
 )
 
-echo  [OK] Alle Dateien gefunden
+echo  [OK] All files found
 echo.
 
-:: ── Firewall-Regel (einmalig, braucht Admin) ──────────────
+:: ── Firewall rule (one-time, requires admin) ──────────────
 netsh advfirewall firewall show rule name="OpenTron" > nul 2>&1
 if errorlevel 1 (
-    echo  Firewall-Regel wird hinzugefuegt ^(einmalig^)...
+    echo  Adding firewall rule ^(one-time^)...
     netsh advfirewall firewall add rule name="OpenTron" dir=in action=allow protocol=TCP localport=8080,8765 > nul 2>&1
     if errorlevel 1 (
-        echo  [HINWEIS] Firewall-Regel konnte nicht gesetzt werden.
-        echo  Bitte Port 8080 und 8765 manuell freigeben,
-        echo  oder dieses Skript als Administrator starten.
+        echo  [NOTICE] Firewall rule could not be set.
+        echo  Please open ports 8080 and 8765 manually,
+        echo  or run this script as Administrator.
         echo.
     ) else (
-        echo  [OK] Firewall-Regel gesetzt
+        echo  [OK] Firewall rule added
         echo.
     )
 )
 
-:: ── Server starten ────────────────────────────────────────
+:: ── Start server ──────────────────────────────────────────
 color 0A
 echo  ══════════════════════════════════════
-echo   Server startet...
-echo   Dieses Fenster offen lassen!
-echo   Beenden: Strg+C oder Fenster schliessen
+echo   Server starting...
+echo   Keep this window open!
+echo   To stop: Ctrl+C or close window
 echo  ══════════════════════════════════════
 echo.
 python server.py
 
-:: Falls server.py abstuerzt
+:: If server.py crashes
 echo.
 color 0C
-echo  [!] Server wurde beendet.
+echo  [!] Server stopped.
 pause

@@ -1,5 +1,5 @@
 """
-server.py – Einstiegspunkt
+server.py – Entry point
 
 Installation: pip install websockets
 Start:        python server.py
@@ -32,7 +32,7 @@ async def send_to(pid: int, obj: dict):
         except: pass
 
 async def ws_handler(ws):
-    # Erstes Paket: Name
+    # First packet: name
     try:
         raw  = await asyncio.wait_for(ws.recv(), timeout=10)
         msg  = json.loads(raw)
@@ -42,14 +42,14 @@ async def ws_handler(ws):
 
     p = game.add_player(name=name)
     game.sockets[p.pid] = ws
-    print(f"[+] {p.name!r} verbunden  (gesamt: {len(game.sockets)})")
+    print(f"[+] {p.name!r} connected  (total: {len(game.sockets)})")
 
-    # Willkommen an neuen Spieler
+    # Welcome new player
     await send_to(p.pid, {
         "type": "welcome", "pid": p.pid,
         "name": p.name, "color": p.color, "grid": game.GRID,
     })
-    # Vollständiger State an alle (neuer Spieler erscheint auf allen Screens)
+    # Full state to all (new player appears on all screens)
     await broadcast(game.build_state())
 
     try:
@@ -62,7 +62,7 @@ async def ws_handler(ws):
             except: pass
     except: pass
     finally:
-        print(f"[-] {p.name!r} getrennt  (gesamt: {len(game.sockets)-1})")
+        print(f"[-] {p.name!r} disconnected  (total: {len(game.sockets)-1})")
         game.remove_player(p.pid)
         await broadcast(game.build_state())
 
@@ -82,7 +82,7 @@ async def main():
     print("═"*50)
     print("  OPENTRON")
     print(f"\n  ► http://{local_ip}:{HTTP_PORT}\n")
-    print("  Im Browser öffnen – sofort spielen.")
+    print("  Open in browser – play instantly.")
     print("═"*50)
 
     async with websockets.serve(ws_handler, "0.0.0.0", WS_PORT):

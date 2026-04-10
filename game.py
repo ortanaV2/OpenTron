@@ -1,11 +1,11 @@
 """
-game.py – Spiellogik
+game.py – Game logic
 """
 
 import asyncio
 import random
 
-# ── Konstanten ─────────────────────────────────────────────
+# ── Constants ──────────────────────────────────────────────
 GRID        = 30
 TICK_MS     = 130
 GROW_EVERY  = 0.5
@@ -43,7 +43,7 @@ def _rand_dir():
 def _opposite(a, b):
     return a[0] == -b[0] and a[1] == -b[1]
 
-# ── Spieler ────────────────────────────────────────────────
+# ── Player ─────────────────────────────────────────────────
 _next_pid  = 0
 _color_idx = 0
 
@@ -54,7 +54,7 @@ class Player:
         if pid is None: _next_pid += 1
         self.color = COLORS[_color_idx % len(COLORS)] if color is None else color
         if color is None: _color_idx += 1
-        self.name       = (name or f"Spieler {self.pid+1}")[:15]
+        self.name       = (name or f"Player {self.pid+1}")[:15]
         d               = _rand_dir()
         self.dir        = d
         self.next_dir   = d
@@ -78,9 +78,9 @@ class Player:
         if len(self.body) > self.target_len:
             self.body.pop()
 
-# ── Zustand ────────────────────────────────────────────────
-players: dict[int, Player] = {}   # nur lebende
-sockets: dict              = {}   # alle verbundenen pid→ws
+# ── State ──────────────────────────────────────────────────
+players: dict[int, Player] = {}   # alive only
+sockets: dict              = {}   # all connected pid→ws
 _wins:   dict[int, int]    = {}
 _names:  dict[int, str]    = {}
 _colors: dict[int, str]    = {}
@@ -122,11 +122,11 @@ async def _broadcast(obj):
     if _broadcast_fn:
         await _broadcast_fn(obj)
 
-# ── State-Paket ────────────────────────────────────────────
+# ── State packet ───────────────────────────────────────────
 def build_state() -> dict:
     """
-    Kompakter vollständiger Zustand jeden Tick.
-    Body als flaches Array [x0,y0, x1,y1, ...] statt Liste von Dicts.
+    Compact full state every tick.
+    Body as flat array [x0,y0, x1,y1, ...] instead of list of dicts.
     """
     snakes = {}
     for pid, p in players.items():
@@ -154,13 +154,13 @@ async def game_tick():
     for p in players.values():
         p.step()
 
-    # Schwanz-Set
+    # Tail set
     tail_set = set()
     for p in players.values():
         for c in p.body[1:]:
             tail_set.add(c)
 
-    # Wand + Schwanz
+    # Wall + tail collisions
     for p in list(players.values()):
         if not p.alive: continue
         hx, hy = p.head
@@ -169,7 +169,7 @@ async def game_tick():
         elif p.head in tail_set:
             p.alive = False
 
-    # Kopf-auf-Kopf
+    # Head-on-head collisions
     head_map = {}
     for p in players.values():
         if not p.alive: continue
@@ -179,12 +179,12 @@ async def game_tick():
         else:
             head_map[p.head] = p
 
-    # Tote sofort entfernen
+    # Remove dead players immediately
     dead_pids = [pid for pid, p in list(players.items()) if not p.alive]
     for pid in dead_pids:
         players.pop(pid)
 
-    # State senden
+    # Send state
     msg = build_state()
     if dead_pids:
         msg["dead"] = dead_pids
@@ -196,7 +196,7 @@ async def grow_tick():
     for p in players.values():
         p.target_len += 1
 
-# ── Rundensteuerung ────────────────────────────────────────
+# ── Round management ───────────────────────────────────────
 async def _check_round_over():
     global _round_over_task
     if _round_over_task: return

@@ -12,11 +12,11 @@ ctx.fillRect(0, 0, W, H);
 
 let myPid = null;
 
-// Lokaler State: pid → { body:[[x,y],...], color, name, length }
-// Wird jeden Tick komplett überschrieben → kein Pixel-Bug möglich
+// Local state: pid → { body:[[x,y],...], color, name, length }
+// Completely overwritten every tick → no pixel bug possible
 const snakes = {};
 
-// ── Name-Screen ───────────────────────────────────────────
+// ── Name screen ───────────────────────────────────────────
 document.getElementById("name-input").addEventListener("keydown", e => {
     if (e.key === "Enter") submitName();
 });
@@ -24,7 +24,7 @@ document.getElementById("name-btn").addEventListener("click", submitName);
 
 function submitName() {
     const n = document.getElementById("name-input").value.trim().slice(0,15);
-    if (!n) { document.getElementById("name-error").textContent = "Bitte einen Namen eingeben."; return; }
+    if (!n) { document.getElementById("name-error").textContent = "Please enter a name."; return; }
     document.getElementById("name-screen").style.display = "none";
     document.getElementById("game-screen").style.display = "flex";
     connectWS(n);
@@ -40,15 +40,15 @@ function connectWS(name) {
         document.getElementById("waiting").textContent = "";
     };
     ws.onerror = () => {
-        document.getElementById("waiting").textContent = "Verbindungsfehler.";
+        document.getElementById("waiting").textContent = "Connection error.";
     };
     ws.onclose = () => {
-        document.getElementById("hud-players").textContent = "Getrennt – Seite neu laden";
+        document.getElementById("hud-players").textContent = "Disconnected – reload page";
     };
     ws.onmessage = e => handle(JSON.parse(e.data));
 }
 
-// ── Eingabe ───────────────────────────────────────────────
+// ── Input ─────────────────────────────────────────────────
 const DIRS = {
     ArrowUp:{x:0,y:-1}, ArrowDown:{x:0,y:1},
     ArrowLeft:{x:-1,y:0}, ArrowRight:{x:1,y:0},
@@ -62,7 +62,7 @@ document.addEventListener("keydown", e => {
     ws.send(JSON.stringify({ type:"dir", dir:d }));
 });
 
-// ── Nachrichten ───────────────────────────────────────────
+// ── Messages ──────────────────────────────────────────────
 function handle(msg) {
     switch (msg.type) {
 
@@ -71,12 +71,12 @@ function handle(msg) {
             document.getElementById("waiting").textContent = "";
             break;
 
-        // "S" = vollständiger State-Tick
+        // "S" = full state tick
         case "S":
             applyState(msg);
             render();
             updateHud(msg.a, msg.t);
-            // Tote aus lokalem State entfernen
+            // Remove dead players from local state
             for (const pid of (msg.dead || [])) {
                 delete snakes[String(pid)];
             }
@@ -90,29 +90,29 @@ function handle(msg) {
             const s = Math.round(msg.seconds);
             const el = document.getElementById("msg");
             el.style.color = "#aaa";
-            el.textContent = s > 0 ? `Nächste Runde in ${s}...` : "";
+            el.textContent = s > 0 ? `Next round in ${s}...` : "";
             break;
         }
 
         case "round_start":
             hideLeaderboard();
             document.getElementById("msg").textContent = "";
-            // Canvas löschen – neues State-Paket kommt sofort danach
+            // Clear canvas – new state packet arrives immediately after
             ctx.fillStyle = "#000";
             ctx.fillRect(0, 0, W, H);
-            // Lokalen State leeren
+            // Clear local state
             for (const k of Object.keys(snakes)) delete snakes[k];
             break;
     }
 }
 
-// ── State anwenden ────────────────────────────────────────
+// ── Apply state ───────────────────────────────────────────
 function applyState(msg) {
-    // Spieler die nicht mehr im State sind entfernen
+    // Remove players no longer in state
     for (const k of Object.keys(snakes)) {
         if (!(k in msg.s)) delete snakes[k];
     }
-    // State übernehmen – body aus flachem Array rekonstruieren
+    // Apply state – reconstruct body from flat array
     for (const [pidStr, info] of Object.entries(msg.s)) {
         const flat = info.b;
         const body = [];
@@ -127,7 +127,7 @@ function applyState(msg) {
     }
 }
 
-// ── Render – kompletter Neuaufbau jeden Frame ─────────────
+// ── Render – full redraw every frame ──────────────────────
 function render() {
     ctx.fillStyle = "#000";
     ctx.fillRect(0, 0, W, H);
@@ -141,12 +141,12 @@ function render() {
 // ── HUD ───────────────────────────────────────────────────
 function updateHud(alive, total) {
     document.getElementById("hud-players").textContent =
-        `Spieler: ${alive}/${total}`;
+        `Players: ${alive}/${total}`;
     const parts = [];
     for (const [pidStr, s] of Object.entries(snakes)) {
         const isMe = parseInt(pidStr) === myPid;
         parts.push(
-            `<span style="color:${s.color}">● ${isMe ? s.name+"(du)" : s.name} [${s.length}]</span>`
+            `<span style="color:${s.color}">● ${isMe ? s.name+" (you)" : s.name} [${s.length}]</span>`
         );
     }
     document.getElementById("hud-scores").innerHTML = parts.join("  ");
@@ -162,7 +162,7 @@ function showLeaderboard(msg) {
         title.textContent = `${msg.winner_name} wins!`;
         title.style.color = msg.winner_color ?? "#fff";
     } else {
-        title.textContent = "Unentschieden!";
+        title.textContent = "Draw!";
         title.style.color = "#aaa";
     }
 
