@@ -80,7 +80,7 @@ async def main():
     http_server.start(HTTP_PORT)
 
     print("═"*50)
-    print("  TRON SNAKE")
+    print("  OPENTRON")
     print(f"\n  ► http://{local_ip}:{HTTP_PORT}\n")
     print("  Im Browser öffnen – sofort spielen.")
     print("═"*50)
