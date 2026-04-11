@@ -1,15 +1,14 @@
 @echo off
-title OPENTRON – Setup
+title OPENTRON - Setup
 color 0F
-chcp 65001 > nul
 
 echo.
-echo  ══════════════════════════════════════
-echo   OPENTRON – Setup ^& Start
-echo  ══════════════════════════════════════
+echo  ========================================
+echo   OPENTRON - Setup ^& Start
+echo  ========================================
 echo.
 
-:: ── Check Python ──────────────────────────────────────────
+:: -- Check Python --
 python --version > nul 2>&1
 if errorlevel 1 (
     echo  [ERROR] Python not found!
@@ -27,7 +26,7 @@ for /f "tokens=*" %%v in ('python --version 2^>^&1') do set PY_VER=%%v
 echo  [OK] %PY_VER% found
 echo.
 
-:: ── Check pip ─────────────────────────────────────────────
+:: -- Check pip --
 pip --version > nul 2>&1
 if errorlevel 1 (
     echo  [ERROR] pip not found.
@@ -36,7 +35,7 @@ if errorlevel 1 (
     exit /b 1
 )
 
-:: ── Install websockets ────────────────────────────────────
+:: -- Install websockets --
 echo  Installing dependencies...
 pip install websockets --quiet --disable-pip-version-check
 if errorlevel 1 (
@@ -49,7 +48,7 @@ if errorlevel 1 (
 echo  [OK] websockets installed
 echo.
 
-:: ── Check files ───────────────────────────────────────────
+:: -- Check files --
 if not exist "server.py" (
     echo  [ERROR] server.py not found!
     echo  Please place all files in the same folder:
@@ -82,7 +81,7 @@ if not exist "game.js" (
 echo  [OK] All files found
 echo.
 
-:: ── Firewall rule (one-time, requires admin) ──────────────
+:: -- Firewall rule (one-time, requires admin) --
 netsh advfirewall firewall show rule name="OpenTron" > nul 2>&1
 if errorlevel 1 (
     echo  Adding firewall rule ^(one-time^)...
@@ -98,13 +97,13 @@ if errorlevel 1 (
     )
 )
 
-:: ── Start server ──────────────────────────────────────────
+:: -- Start server --
 color 0A
-echo  ══════════════════════════════════════
+echo  ========================================
 echo   Server starting...
 echo   Keep this window open!
 echo   To stop: Ctrl+C or close window
-echo  ══════════════════════════════════════
+echo  ========================================
 echo.
 python server.py
 
