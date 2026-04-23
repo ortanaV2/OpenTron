@@ -13,7 +13,7 @@ import game
 import http_server
 
 WS_PORT   = 8765
-HTTP_PORT = 8080
+HTTP_PORT = 9191
 
 async def broadcast(obj: dict):
     if not game.sockets: return
